@@ -21,8 +21,14 @@ namespace weather_backend.Controllers
         /// <param name="searchTerm">Search term to query</param>
         /// <returns>Information for a location</returns>
         [HttpGet(Name = "GetLocation")]
-        public async Task<IActionResult> Get(string searchTerm)
+        public async Task<IActionResult> Get(string? searchTerm)
         {
+            // Dont accept empty search terms or those with the string "test"
+            // Using "test" does not return expected values
+            if (searchTerm == null || searchTerm.ToLower() == "test")
+            {
+                return BadRequest("Please input a location name");
+            }
             using var client = new HttpClient();
             try
             {
@@ -32,33 +38,34 @@ namespace weather_backend.Controllers
 
                 // Call API with parameters
                 HttpResponseMessage response = await client
-                    .GetAsync($"/get/1.0/direct?q={searchTerm}&limit=1&appid={APIKey}");
+                    .GetAsync($"/geo/1.0/direct?q={searchTerm}&limit=1&appid={APIKey}");
                 response.EnsureSuccessStatusCode();
 
                 // Convert response to enum of locations
                 string json = await response.Content.ReadAsStringAsync();
+                JsonSerializerOptions options = new()
+                {
+                    PropertyNameCaseInsensitive = true
+                };
                 IEnumerable<LocationViewModel>? locations = JsonSerializer
-                    .Deserialize<IEnumerable<LocationViewModel>>(json);
+                    .Deserialize<IEnumerable<LocationViewModel>>(json, options);
 
                 // Get the first result (OWM API will only return array so need to do this)
                 LocationViewModel? location = null;
-                if (locations != null)
+                if (locations != null && locations.Count() > 0)
                 {
                     location = locations.FirstOrDefault();
+                } else
+                {
+                    return NotFound("Sorry, we were not able to find a location with that name");
                 }
 
                 // Return 
-                return Ok(new LocationViewModel
-                {
-                    Name = location?.Name,
-                    Country = location?.Country,
-                    Lat = location?.Lat,
-                    Long = location?.Long
-                });
+                return Ok(location);
             }
             catch
             {
-                return BadRequest($"There was an error getting your location");
+                return BadRequest($"There was an problem getting your location");
             }
         }
     }

@@ -7,7 +7,7 @@
     {
         public string? Name { get; set; }
         public string? Country { get; set; }
-        public string? Lat { get; set; }
-        public string? Long { get; set; }
+        public float? Lat { get; set; }
+        public float? Lon { get; set; }
     }
 }
