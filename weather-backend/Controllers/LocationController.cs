@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using weather_backend.ViewModels;
+using weather_backend.Models;
 
 namespace weather_backend.Controllers
 {
@@ -8,18 +8,23 @@ namespace weather_backend.Controllers
     [Route("[controller]")]
     public class LocationController : ControllerBase
     {
-        public IConfiguration configuration;
+        private readonly IConfiguration configuration;
+        private readonly IHttpClientFactory httpClientFactory;
 
-        public LocationController(IConfiguration iConfiguration)
+        public LocationController(
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory
+        )
         {
-            configuration = iConfiguration;
+            this.configuration = configuration;
+            this.httpClientFactory = httpClientFactory;
         }
 
         /// <summary>
         /// Get latitude, longitude, and name of a location
         /// </summary>
         /// <param name="searchTerm">Search term to query</param>
-        /// <returns>Information for a location</returns>
+        /// <returns>Location information</returns>
         [HttpGet(Name = "GetLocation")]
         public async Task<IActionResult> Get(string? searchTerm)
         {
@@ -29,11 +34,11 @@ namespace weather_backend.Controllers
             {
                 return BadRequest("Please input a location name");
             }
-            using var client = new HttpClient();
+
+            using HttpClient? client = httpClientFactory.CreateClient("OpenWeatherMap");
             try
             {
-                // Set up API address
-                client.BaseAddress = new Uri("https://api.openweathermap.org");
+                // Retrieve API key
                 string APIKey = configuration.GetValue<string>("APIKey");
 
                 // Call API with parameters
@@ -41,17 +46,17 @@ namespace weather_backend.Controllers
                     .GetAsync($"/geo/1.0/direct?q={searchTerm}&limit=1&appid={APIKey}");
                 response.EnsureSuccessStatusCode();
 
-                // Convert response to enum of locations
+                // Deserialize response to enum of locations
                 string json = await response.Content.ReadAsStringAsync();
                 JsonSerializerOptions options = new()
                 {
                     PropertyNameCaseInsensitive = true
                 };
-                IEnumerable<LocationViewModel>? locations = JsonSerializer
-                    .Deserialize<IEnumerable<LocationViewModel>>(json, options);
+                IEnumerable<LocationModel>? locations = JsonSerializer
+                    .Deserialize<IEnumerable<LocationModel>>(json, options);
 
                 // Get the first result (OWM API will only return array so need to do this)
-                LocationViewModel? location = null;
+                LocationModel? location = null;
                 if (locations != null && locations.Count() > 0)
                 {
                     location = locations.FirstOrDefault();
