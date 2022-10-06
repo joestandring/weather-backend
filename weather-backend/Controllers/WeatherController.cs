@@ -152,6 +152,7 @@ namespace weather_backend.Controllers
                     Sunrise = sunrise,
                     Sunset = sunset,
                     forecast.Sys?.Country,
+                    weather?.ID,
                     weather?.Main,
                     weather?.Description,
                     weather?.Icon
