@@ -137,7 +137,10 @@ namespace weather_backend.Controllers
                     forecast.Main?.Pressure,
                     forecast.Main?.Humidity,
                     Sunrise = sunrise,
-                    Sunset = sunset
+                    Sunset = sunset,
+                    forecast.Weather?.Main,
+                    forecast.Weather?.Description,
+                    forecast.Weather?.Icon,
                 });
             } catch (Exception ex)
             {

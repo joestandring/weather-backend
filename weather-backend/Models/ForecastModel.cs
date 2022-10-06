@@ -15,6 +15,13 @@
         public int? Sunset { get; set; }
     }
 
+    public class WeatherModel
+    {
+        public string? Main { get; set; }
+        public string? Description { get; set; }
+        public string? Icon { get; set; }
+    }
+
     // A weather forecast overview
     public class ForecastModel
     {
@@ -23,5 +30,6 @@
         // Temperature, humidity and pressure data
         public MainModel? Main { get; set; }
         public SysModel? Sys { get; set; }
+        public WeatherModel? Weather { get; set; }
     }
 }
