@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using System.Xml.Schema;
 using weather_backend.Models;
 
 namespace weather_backend.Controllers
@@ -47,6 +48,17 @@ namespace weather_backend.Controllers
                 throw new Exception("Could not deserialize");
             }
             return obj;
+        }
+
+        /// <summary>
+        /// Converts a unix epoch time value to a local time string
+        /// </summary>
+        /// <param name="unix">Unix epoch time value</param>
+        /// <returns>Formatted date string in local time</returns>
+        private string UnixTimeToLocalTimeString(long unix)
+        {
+            DateTime time = DateTimeOffset.FromUnixTimeSeconds(unix).DateTime.ToLocalTime();
+            return $"{time.Hour}:{time.Minute}";
         }
 
         /// <summary>
@@ -113,18 +125,16 @@ namespace weather_backend.Controllers
                 ForecastModel forecast = Deserialize<ForecastModel>(json);
 
                 // Convert sunrise and sunset from unix epoch time to local DateTime
-                DateTime? sunrise = null;
+                string? sunrise = null;
                 if (forecast.Sys?.Sunrise != null)
                 {
-                    sunrise = DateTimeOffset
-                        .FromUnixTimeSeconds((long)forecast.Sys.Sunrise).DateTime.ToLocalTime();
+                    sunrise = UnixTimeToLocalTimeString((long)forecast.Sys.Sunrise);
                 }
 
-                DateTime? sunset = null;
+                string? sunset = null;
                 if (forecast.Sys?.Sunset != null)
                 {
-                    sunset = DateTimeOffset
-                        .FromUnixTimeSeconds((long)forecast.Sys.Sunset).DateTime.ToLocalTime();
+                    sunset = UnixTimeToLocalTimeString((long)forecast.Sys.Sunset);
                 }
 
                 // Weather returns as array
