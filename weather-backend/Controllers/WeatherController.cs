@@ -127,6 +127,9 @@ namespace weather_backend.Controllers
                         .FromUnixTimeSeconds((long)forecast.Sys.Sunset).DateTime.ToLocalTime();
                 }
 
+                // Weather returns as array
+                WeatherModel? weather = forecast.Weather?.FirstOrDefault();
+
                 // Return flattened result
                 return Ok(new
                 {
@@ -138,9 +141,10 @@ namespace weather_backend.Controllers
                     forecast.Main?.Humidity,
                     Sunrise = sunrise,
                     Sunset = sunset,
-                    forecast.Weather?.Main,
-                    forecast.Weather?.Description,
-                    forecast.Weather?.Icon,
+                    forecast.Sys?.Country,
+                    weather?.Main,
+                    weather?.Description,
+                    weather?.Icon
                 });
             } catch (Exception ex)
             {

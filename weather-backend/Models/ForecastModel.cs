@@ -11,6 +11,7 @@
 
     public class SysModel
     {
+        public string? Country { get; set; }
         public int? Sunrise { get; set; }
         public int? Sunset { get; set; }
     }
@@ -25,11 +26,9 @@
     // A weather forecast overview
     public class ForecastModel
     {
-        // Name of location
         public string? Name { get; set; }
-        // Temperature, humidity and pressure data
+        public IEnumerable<WeatherModel>? Weather { get; set; }
         public MainModel? Main { get; set; }
         public SysModel? Sys { get; set; }
-        public WeatherModel? Weather { get; set; }
     }
 }
