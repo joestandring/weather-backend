@@ -1,7 +1,7 @@
 # Weather Backend
 An ASP.NET Web API to get weather information for a provided location using OpenWeatherMap
 
-> :warning: You must provide a valid OpenWeatherMap API key in appsettings.json
+> :warning: You must provide a valid OpenWeatherMap API key in `appsettings.json` and `appsettings.Test.json`
 ```json
 {
   "Logging": {
