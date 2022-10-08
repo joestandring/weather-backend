@@ -31,8 +31,6 @@ namespace weather_backend.Controllers
         /// <exception cref="Exception">Deserialization failed</exception>
         private static T Deserialize<T>(string json)
         {
-            if (json == null) throw new ArgumentNullException(nameof(json));
-
             JsonSerializerOptions options = new()
             {
                 PropertyNameCaseInsensitive = true

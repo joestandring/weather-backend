@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using Moq.Protected;
+using System.Net;
 using weather_backend.Controllers;
 
 namespace UnitTests
@@ -17,9 +19,11 @@ namespace UnitTests
         public async void NoArgumentProvided()
         {
             Mock<IHttpClientFactory> mockFactory = new();
-            Mock<IConfiguration> mockConfiguration = new();
+            var config = new ConfigurationBuilder().AddJsonFile("appsettings.Test.json")
+                .AddEnvironmentVariables()
+                .Build();
 
-            WeatherController weatherController = new(mockConfiguration.Object, mockFactory.Object);
+            WeatherController weatherController = new(config, mockFactory.Object);
 
             IActionResult result = await weatherController.Get("");
             BadRequestObjectResult? actual = result as BadRequestObjectResult;
@@ -30,10 +34,14 @@ namespace UnitTests
         /// <summary>
         /// WeatherController Get should return a BadRequest result if no location matches
         /// </summary>
-        /*
         [Fact]
         public async void LocationNotFound() {
-            WeatherController weatherController = new(configuration, httpClientFactory);
+            Mock<IHttpClientFactory> mockFactory = new();
+            var config = new ConfigurationBuilder().AddJsonFile("appsettings.Test.json")
+                .AddEnvironmentVariables()
+                .Build();
+
+            WeatherController weatherController = new(config, mockFactory.Object);
 
             IActionResult result = await weatherController.Get("ThisPlaceDoesNotExist");
             BadRequestObjectResult? actual = result as BadRequestObjectResult;
@@ -44,16 +52,38 @@ namespace UnitTests
         /// <summary>
         /// WeatherController Get should return successfully if a forecast has been found
         /// </summary>
+        /*
         [Fact]
         public async void Success()
         {
-            WeatherController weatherController = new(configuration, httpClientFactory);
+            var config = new ConfigurationBuilder().AddJsonFile("appsettings.Test.json")
+                .AddEnvironmentVariables()
+                .Build();
+
+            Mock<HttpMessageHandler> mockHandler = new();
+            HttpResponseMessage response = new();
+            mockHandler
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>()
+                )
+                .ReturnsAsync(response)
+                .Verifiable();
+            HttpClient httpClient = new(mockHandler.Object)
+            {
+                BaseAddress = new Uri("https://api.openweathermap.org")
+            };
+            Mock<IHttpClientFactory> mockFactory = new();
+            mockFactory.Setup(_ => _.CreateClient("OpenWeatherMap")).Returns(httpClient);
+
+            WeatherController weatherController = new(config, mockFactory.Object);
 
             IActionResult result = await weatherController.Get("Peterborough");
             OkObjectResult? actual = result as OkObjectResult;
 
-            Assert.NotNull(actual);
-            Assert.Equal(200, actual?.StatusCode);
+            Assert.IsAssignableFrom<OkObjectResult>(actual);
         }
         */
     }
