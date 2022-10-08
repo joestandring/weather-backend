@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using System.Xml.Schema;
 using weather_backend.Models;
 
 namespace weather_backend.Controllers
@@ -32,10 +31,7 @@ namespace weather_backend.Controllers
         /// <exception cref="Exception">Deserialization failed</exception>
         private static T Deserialize<T>(string json)
         {
-            if (json == null)
-            {
-                throw new ArgumentNullException(nameof(json));
-            }
+            if (json == null) throw new ArgumentNullException(nameof(json));
 
             JsonSerializerOptions options = new()
             {
@@ -43,10 +39,7 @@ namespace weather_backend.Controllers
             };
 
             var obj = JsonSerializer.Deserialize<T>(json, options);
-            if (obj == null)
-            {
-                throw new Exception("Could not deserialize");
-            }
+            if (obj == null) throw new Exception("Could not deserialize");
             return obj;
         }
 
@@ -55,7 +48,7 @@ namespace weather_backend.Controllers
         /// </summary>
         /// <param name="unix">Unix epoch time value</param>
         /// <returns>Formatted date string in local time</returns>
-        private string UnixTimeToLocalTimeString(long unix)
+        private static string UnixTimeToLocalTimeString(long unix)
         {
             DateTime time = DateTimeOffset.FromUnixTimeSeconds(unix).DateTime.ToLocalTime();
             return $"{time.Hour}:{time.Minute}";
@@ -75,6 +68,7 @@ namespace weather_backend.Controllers
 
             HttpResponseMessage response = await client
                 .GetAsync($"/geo/1.0/direct?q={query}&limit=1&appid={key}");
+
             response.EnsureSuccessStatusCode();
 
             // Deserialize response to enum of locations
